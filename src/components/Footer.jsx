@@ -70,7 +70,7 @@ const Footer = () => {
                   key={item.label}
                   href={item.href}
                   aria-label={item.label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/40 hover:bg-white/[0.06] hover:text-white hover:shadow-lg hover:shadow-purple-500/20"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/3 text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/40 hover:bg-white/6 hover:text-white hover:shadow-lg hover:shadow-purple-500/20"
                 >
                   {item.icon}
                 </a>
@@ -108,10 +108,10 @@ const Footer = () => {
           <p>© 2026 Tiqnora Inc. All rights reserved.</p>
 
           <div className="flex flex-wrap gap-4">
-            <span className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-semibold text-slate-400">
+            <span className="rounded-full border border-white/10 bg-white/3 px-4 py-2 text-xs font-semibold text-slate-400">
               Secure Stripe Payments
             </span>
-            <span className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-semibold text-slate-400">
+            <span className="rounded-full border border-white/10 bg-white/3 px-4 py-2 text-xs font-semibold text-slate-400">
               Role-Based Dashboards
             </span>
           </div>

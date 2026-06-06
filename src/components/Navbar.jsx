@@ -122,7 +122,7 @@ const Navbar = () => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-2 py-2 pr-4 transition hover:border-purple-400/40 hover:bg-white/[0.06]"
+                className="flex items-center gap-3 rounded-full border border-white/10 bg-white/3 px-2 py-2 pr-4 transition hover:border-purple-400/40 hover:bg-white/6"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-r from-[#7C3AED] to-[#F43F5E] text-sm font-bold text-white">
                   {mockUser.name.charAt(0)}
@@ -196,7 +196,7 @@ const Navbar = () => {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white transition hover:bg-white/10 lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/3 text-white transition hover:bg-white/10 lg:hidden"
         >
           {mobileOpen ? <FaTimes /> : <FaBars />}
         </button>
