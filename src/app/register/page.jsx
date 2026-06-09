@@ -250,7 +250,7 @@ const RegisterPage = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.1, delay: 0.25 }}
-          className="absolute left-1/2 top-1/3 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-[#22D3EE]/10 blur-[130px]"
+          className="absolute left-1/2 top-1/3 h-80 w-[320px] -translate-x-1/2 rounded-full bg-[#22D3EE]/10 blur-[130px]"
         />
       </div>
 
