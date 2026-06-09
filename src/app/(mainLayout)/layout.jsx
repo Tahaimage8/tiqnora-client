@@ -7,7 +7,7 @@ const RootLayout = ({ children }) => {
     <html
       lang="en"
     >
-      <body className="min-h-full flex flex-col bg-[#080C16] text-white">
+      <body className="">
         <Navbar />
 
         <main className="flex-1">{children}</main>

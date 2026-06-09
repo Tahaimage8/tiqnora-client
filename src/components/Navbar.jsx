@@ -40,7 +40,7 @@ const Navbar = () => {
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Events", href: "/events" },
-    { label: "Organizations", href: "/organizations" },
+
     { label: "About", href: "/about" },
   ];
 
