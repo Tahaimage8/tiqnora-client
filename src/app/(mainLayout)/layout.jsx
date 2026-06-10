@@ -1,23 +1,16 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
-
-const RootLayout = ({ children }) => {
+const MainLayout = ({ children }) => {
   return (
-    <html
-      lang="en"
-    >
-      <body className="">
-        <Navbar />
+    <div className="flex min-h-screen flex-col bg-[#080C16] text-white">
+      <Navbar />
 
-        <main className="flex-1">{children}</main>
+      <main className="flex-1">{children}</main>
 
-        <Footer />
-
-       
-      </body>
-    </html>
+      <Footer />
+    </div>
   );
 };
 
-export default RootLayout;
+export default MainLayout;
