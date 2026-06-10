@@ -6,7 +6,9 @@ const layout = ({children}) => {
 
 <div>
  <DashboardSideBar>
-      {children}
+   <div className='px-6 py-10 max-w-6xl w-full mx-auto'>
+       {children}
+   </div>
  </DashboardSideBar>
   
     </div>
