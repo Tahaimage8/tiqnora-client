@@ -9,10 +9,23 @@ export const serverMutation = async (path, method, data) => {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result?.message || "Request failed.");
+  }
+
+  return result;
 };
 
 export const serverFetch = async (path) => {
   const res = await fetch(`${BaseURL}${path}`);
-  return res.json();
+
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result?.message || "Request failed.");
+  }
+
+  return result;
 };

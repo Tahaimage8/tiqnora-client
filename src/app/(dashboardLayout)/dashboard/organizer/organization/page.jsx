@@ -6,18 +6,21 @@ import { Button } from "@heroui/react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+
 import {
   FaBuilding,
   FaEnvelope,
-  FaExternalLinkAlt,
-  FaGlobe,
   FaImage,
   FaPlusCircle,
   FaTimes,
   FaTrash,
   FaUpload,
 } from "react-icons/fa";
-import { addOrganization } from "@/lib/api/organization/action";
+import {
+  addOrganization,
+  getMyOrganization,
+} from "@/lib/api/organization/action";
+import Organization from "@/components/Organizer/Organization";
 
 const OrganizationPage = () => {
   const { data: session, isPending } = authClient.useSession();
@@ -25,9 +28,8 @@ const OrganizationPage = () => {
   const organizerEmail = session?.user?.email || "";
   const organizerName = session?.user?.name || "Organizer";
 
-  // Apatoto organization nai
-  // Backend add korle ekhane API theke organization set korba
   const [organization, setOrganization] = useState(null);
+  const [fetchingOrganization, setFetchingOrganization] = useState(true);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -40,6 +42,33 @@ const OrganizationPage = () => {
     website: "",
     description: "",
   });
+
+  useEffect(() => {
+    if (isPending) return;
+
+    if (!organizerEmail) {
+      setFetchingOrganization(false);
+      return;
+    }
+
+    const loadMyOrganization = async () => {
+      try {
+        setFetchingOrganization(true);
+
+        const response = await getMyOrganization(organizerEmail);
+
+        if (response?.success) {
+          setOrganization(response.data || null);
+        }
+      } catch (error) {
+        toast.error(error.message || "Failed to load organization.");
+      } finally {
+        setFetchingOrganization(false);
+      }
+    };
+
+    loadMyOrganization();
+  }, [isPending, organizerEmail]);
 
   useEffect(() => {
     if (!selectedLogo) {
@@ -133,80 +162,70 @@ const OrganizationPage = () => {
     return result?.data?.display_url || result?.data?.url;
   };
 
-const handleSubmit = async (event) => {
-  event.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  const organizationName = formData.organizationName.trim();
-  const website = formData.website.trim();
-  const description = formData.description.trim();
+    const organizationName = formData.organizationName.trim();
+    const website = formData.website.trim();
+    const description = formData.description.trim();
 
-  if (!organizerEmail) {
-    toast.error("Organizer email not found. Please login again.");
-    return;
-  }
-
-  if (!organizationName) {
-    toast.error("Organization name is required.");
-    return;
-  }
-
-  if (!selectedLogo) {
-    toast.error("Organization logo is required.");
-    return;
-  }
-
-  if (!description) {
-    toast.error("Organization description is required.");
-    return;
-  }
-
-  try {
-    setCreating(true);
-
-    toast.loading("Uploading organization logo...", {
-      id: "organization-logo",
-    });
-
-    const logoUrl = await uploadImageToImageBB(selectedLogo);
-
-    toast.success("Logo uploaded successfully.", {
-      id: "organization-logo",
-    });
-
-    const newOrganization = {
-      organizationName,
-      logo: logoUrl,
-      website,
-      description,
-      organizerEmail,
-      organizerName,
-      status: "active",
-    };
-
-    console.log("Organization data before backend:", newOrganization);
-
-    const response = await addOrganization(newOrganization);
-
-    if (!response?.success) {
-      toast.error(response?.message || "Organization creation failed.");
+    if (!organizerEmail) {
+      toast.error("Organizer email not found. Please login again.");
       return;
     }
 
-    setOrganization(response.data);
+    if (!organizationName) {
+      toast.error("Organization name is required.");
+      return;
+    }
 
-    toast.success("Organization created successfully.");
-    closeModal();
-  } catch (error) {
-    toast.error(error.message || "Organization creation failed.");
-  } finally {
-    setCreating(false);
-  }
-};
+    if (!selectedLogo) {
+      toast.error("Organization logo is required.");
+      return;
+    }
 
-  if (isPending) {
+    if (!description) {
+      toast.error("Organization description is required.");
+      return;
+    }
+
+    try {
+      setCreating(true);
+
+      const logoUrl = await uploadImageToImageBB(selectedLogo);
+
+      const newOrganization = {
+        organizationName,
+        logo: logoUrl,
+        website,
+        description,
+        organizerEmail,
+        organizerName,
+        status: "active",
+      };
+
+      const response = await addOrganization(newOrganization);
+
+      if (!response?.success) {
+        toast.error(response?.message || "Organization creation failed.");
+        return;
+      }
+
+      setOrganization(response.data);
+
+      toast.success(response?.message || "Organization created successfully.");
+      closeModal();
+    } catch (error) {
+      toast.error(error.message || "Organization creation failed.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  if (isPending || fetchingOrganization) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
-        <div className="rounded-3xl border border-white/10 bg-white/4 px-6 py-4 text-sm font-semibold text-slate-300">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-6 py-4 text-sm font-semibold text-slate-300">
           Loading organization profile...
         </div>
       </div>
@@ -227,7 +246,7 @@ const handleSubmit = async (event) => {
 
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
               <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_16px_#22D3EE]" />
               Organization Settings
             </div>
@@ -244,7 +263,7 @@ const handleSubmit = async (event) => {
               will be attached automatically from your logged-in session.
             </p>
 
-            <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/3 px-4 py-2 text-xs font-semibold text-slate-400">
+            <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-semibold text-slate-400">
               <FaEnvelope className="text-cyan-300" />
               <span className="truncate">
                 Organizer Email:{" "}
@@ -302,71 +321,20 @@ const handleSubmit = async (event) => {
         </motion.div>
       )}
 
-      {/* Organization Profile Card */}
+      {/* Organization Card */}
       {organization && (
-        <motion.div
-          initial={{ opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035] shadow-2xl shadow-black/10 backdrop-blur-xl"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr]">
-            <div className="relative min-h-65 bg-[#0B1120]">
-              <img
-                src={organization.logo}
-                alt={organization.organizationName}
-                className="h-full min-h-65 w-full object-cover"
-              />
-
-              <div className="absolute inset-0 bg-linear-to-t from-[#080C16]/80 via-transparent to-transparent" />
-
-              <span className="absolute left-5 top-5 rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-yellow-300">
-                {organization.status}
-              </span>
-            </div>
-
-            <div className="p-6 sm:p-8">
-              <h2 className="text-3xl font-black text-white">
-                {organization.organizationName}
-              </h2>
-
-              <p className="mt-4 text-sm leading-7 text-slate-400">
-                {organization.description}
-              </p>
-
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/3 p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-                  Organizer Email
-                </p>
-                <p className="mt-2 text-sm font-semibold text-slate-300">
-                  {organization.organizerEmail}
-                </p>
-              </div>
-
-              {organization.website && (
-                <a
-                  href={
-                    organization.website.startsWith("http")
-                      ? organization.website
-                      : `https://${organization.website}`
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/3 px-5 py-3 text-sm font-bold text-cyan-300 transition hover:border-cyan-300/30 hover:bg-cyan-300/10"
-                >
-                  <FaGlobe />
-                  Visit Website
-                  <FaExternalLinkAlt className="text-xs" />
-                </a>
-              )}
-            </div>
-          </div>
-        </motion.div>
+        <Organization
+          organization={organization}
+          onEdit={() => toast.info("Edit option will be added in PATCH step.")}
+          onDelete={() =>
+            toast.info("Delete option will be added in DELETE step.")
+          }
+        />
       )}
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center px-4 py-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-6">
           <button
             type="button"
             aria-label="Close modal overlay"
@@ -384,13 +352,13 @@ const handleSubmit = async (event) => {
               type="button"
               onClick={closeModal}
               disabled={creating}
-              className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/4 text-slate-300 transition hover:bg-white/8 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-300 transition hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <FaTimes />
             </button>
 
             <div className="mb-7 pr-12">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
                 <FaBuilding />
                 Create Your Organization
               </div>
@@ -412,7 +380,7 @@ const handleSubmit = async (event) => {
                   Organizer Email
                 </label>
 
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm text-slate-300">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-slate-300">
                   <FaEnvelope className="text-cyan-300" />
                   <span className="truncate">
                     {organizerEmail || "Session email not found"}
@@ -426,7 +394,7 @@ const handleSubmit = async (event) => {
                   Organization Logo
                 </p>
 
-                <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/3 p-4 sm:flex-row sm:items-center">
+                <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center">
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#080C16] text-3xl text-slate-600">
                     {logoPreview ? (
                       <img
@@ -451,7 +419,7 @@ const handleSubmit = async (event) => {
                     <div className="mt-4 flex flex-wrap gap-3">
                       <label
                         htmlFor="organizationLogo"
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/4 px-4 py-2 text-xs font-bold text-slate-300 transition hover:border-cyan-300/40 hover:bg-white/8"
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold text-slate-300 transition hover:border-cyan-300/40 hover:bg-white/[0.08]"
                       >
                         <FaUpload />
                         Choose Logo
@@ -501,8 +469,8 @@ const handleSubmit = async (event) => {
                   type="text"
                   value={formData.organizationName}
                   onChange={handleChange}
-                  placeholder="Aurora Stage Collective"
-                  className="w-full rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
+                  placeholder="Nova Event Studio"
+                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
                 />
               </div>
 
@@ -524,8 +492,8 @@ const handleSubmit = async (event) => {
                   type="text"
                   value={formData.website}
                   onChange={handleChange}
-                  placeholder="aurorastage.co"
-                  className="w-full rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
+                  placeholder="novaevents.live"
+                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
                 />
               </div>
 
@@ -543,9 +511,9 @@ const handleSubmit = async (event) => {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Curating immersive conferences, creative sessions, and community-driven event experiences for modern audiences."
+                  placeholder="Building memorable event experiences through workshops, meetups, cultural programs, and community gatherings."
                   rows={5}
-                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm leading-7 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
+                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-7 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
                 />
               </div>
 
@@ -556,7 +524,7 @@ const handleSubmit = async (event) => {
                   variant="bordered"
                   onPress={closeModal}
                   isDisabled={creating}
-                  className="h-11 border border-white/10 bg-white/3 px-6 text-sm font-bold text-white"
+                  className="h-11 border border-white/10 bg-white/[0.03] px-6 text-sm font-bold text-white"
                 >
                   Cancel
                 </Button>
