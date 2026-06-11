@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -6,6 +7,7 @@ import { Button } from "@heroui/react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { addEvent } from "@/lib/api/events/action";
 import {
   FaCalendarAlt,
   FaEnvelope,
@@ -45,12 +47,6 @@ const LOCATIONS = [
   "Cox's Bazar",
   "Gazipur",
   "Narayanganj",
-  "New York",
-  "San Francisco",
-  "London",
-  "Tokyo",
-  "Berlin",
-  "Online",
 ];
 
 const AddEventPage = () => {
@@ -171,7 +167,7 @@ const AddEventPage = () => {
     const location = formData.location.trim();
     const date = formData.date;
     const ticketPrice = Number(formData.ticketPrice);
-    const capacity = Number(formData.capacity);
+    const availableSeats = Number(formData.capacity);
     const description = formData.description.trim();
 
     if (!organizerEmail) {
@@ -209,8 +205,8 @@ const AddEventPage = () => {
       return;
     }
 
-    if (Number.isNaN(capacity) || capacity < 1) {
-      toast.error("Capacity must be at least 1.");
+    if (Number.isNaN(availableSeats) || availableSeats < 1) {
+      toast.error("Available seats must be at least 1.");
       return;
     }
 
@@ -231,18 +227,23 @@ const AddEventPage = () => {
         location,
         date,
         ticketPrice,
-        capacity,
+        availableSeats,
         description,
+        status: "approved",
         organizerEmail,
         organizerName,
-
       };
 
-      console.log("Event data ready:", newEvent);
+      const response = await addEvent(newEvent);
 
+      if (!response?.success) {
+        toast.error(response?.message || "Event creation failed.");
+        return;
+      }
 
+      console.log("Created event:", response.data);
 
-      toast.success("Event data ready. Backend POST will be added next.");
+      toast.success(response?.message || "Event created successfully.");
       resetForm();
     } catch (error) {
       toast.error(error.message || "Event creation failed.");
@@ -263,7 +264,6 @@ const AddEventPage = () => {
 
   return (
     <section className="space-y-8 overflow-hidden">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
@@ -287,8 +287,8 @@ const AddEventPage = () => {
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
-            Add event details, ticket price, capacity, date, location, and
-            banner image. Organizer email will be attached automatically.
+            Add event details, ticket price, available seats, date, location,
+            and banner image. Organizer email will be attached automatically.
           </p>
 
           <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/3 px-4 py-2 text-xs font-semibold text-slate-400">
@@ -303,7 +303,6 @@ const AddEventPage = () => {
         </div>
       </motion.div>
 
-      {/* Form */}
       <motion.div
         initial={{ opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
@@ -311,7 +310,6 @@ const AddEventPage = () => {
         className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6 shadow-2xl shadow-black/10 backdrop-blur-xl sm:p-8"
       >
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Banner */}
           <div>
             <p className="mb-3 text-sm font-semibold text-slate-300">
               Event Banner
@@ -377,7 +375,6 @@ const AddEventPage = () => {
             </div>
           </div>
 
-          {/* Title + Category */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label
@@ -423,7 +420,6 @@ const AddEventPage = () => {
             </div>
           </div>
 
-          {/* Location + Date */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label
@@ -469,7 +465,6 @@ const AddEventPage = () => {
             </div>
           </div>
 
-          {/* Price + Capacity */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label
@@ -497,7 +492,7 @@ const AddEventPage = () => {
                 htmlFor="capacity"
                 className="mb-2 block text-sm font-semibold text-slate-300"
               >
-                Available Capacity
+                Available Seats
               </label>
 
               <input
@@ -513,7 +508,6 @@ const AddEventPage = () => {
             </div>
           </div>
 
-          {/* Description */}
           <div>
             <label
               htmlFor="description"
