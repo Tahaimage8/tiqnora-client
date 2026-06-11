@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -6,6 +7,7 @@ import { Button } from "@heroui/react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import Organization from "@/components/Organizer/Organization";
 
 import {
   FaBuilding,
@@ -16,11 +18,11 @@ import {
   FaTrash,
   FaUpload,
 } from "react-icons/fa";
+
 import {
   addOrganization,
   getMyOrganization,
 } from "@/lib/api/organization/action";
-import Organization from "@/components/Organizer/Organization";
 
 const OrganizationPage = () => {
   const { data: session, isPending } = authClient.useSession();
@@ -43,6 +45,7 @@ const OrganizationPage = () => {
     description: "",
   });
 
+  // Load logged-in organizer's organization
   useEffect(() => {
     if (isPending) return;
 
@@ -70,6 +73,7 @@ const OrganizationPage = () => {
     loadMyOrganization();
   }, [isPending, organizerEmail]);
 
+  // Logo preview
   useEffect(() => {
     if (!selectedLogo) {
       setLogoPreview("");
@@ -84,7 +88,7 @@ const OrganizationPage = () => {
     };
   }, [selectedLogo]);
 
-  const openModal = () => {
+  const openCreateModal = () => {
     setModalOpen(true);
   };
 
@@ -225,7 +229,7 @@ const OrganizationPage = () => {
   if (isPending || fetchingOrganization) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-6 py-4 text-sm font-semibold text-slate-300">
+        <div className="rounded-3xl border border-white/10 bg-white/4 px-6 py-4 text-sm font-semibold text-slate-300">
           Loading organization profile...
         </div>
       </div>
@@ -246,7 +250,7 @@ const OrganizationPage = () => {
 
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
               <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_16px_#22D3EE]" />
               Organization Settings
             </div>
@@ -263,7 +267,7 @@ const OrganizationPage = () => {
               will be attached automatically from your logged-in session.
             </p>
 
-            <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-semibold text-slate-400">
+            <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/3 px-4 py-2 text-xs font-semibold text-slate-400">
               <FaEnvelope className="text-cyan-300" />
               <span className="truncate">
                 Organizer Email:{" "}
@@ -278,7 +282,7 @@ const OrganizationPage = () => {
             <Button
               type="button"
               radius="full"
-              onPress={openModal}
+              onPress={openCreateModal}
               className="h-12 w-full bg-linear-to-r from-[#7C3AED] to-[#F43F5E] px-6 text-sm font-bold text-white shadow-lg shadow-purple-500/25 sm:w-fit"
             >
               <FaPlusCircle className="mr-2" />
@@ -312,7 +316,7 @@ const OrganizationPage = () => {
           <Button
             type="button"
             radius="full"
-            onPress={openModal}
+            onPress={openCreateModal}
             className="mt-7 h-12 bg-linear-to-r from-[#7C3AED] to-[#F43F5E] px-7 text-sm font-bold text-white shadow-lg shadow-purple-500/25"
           >
             <FaPlusCircle className="mr-2" />
@@ -325,16 +329,16 @@ const OrganizationPage = () => {
       {organization && (
         <Organization
           organization={organization}
-          onEdit={() => toast.info("Edit option will be added in PATCH step.")}
+          onUpdated={setOrganization}
           onDelete={() =>
             toast.info("Delete option will be added in DELETE step.")
           }
         />
       )}
 
-      {/* Modal */}
+      {/* Create Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-6">
+        <div className="fixed inset-0 z-100 flex items-center justify-center px-4 py-6">
           <button
             type="button"
             aria-label="Close modal overlay"
@@ -352,13 +356,13 @@ const OrganizationPage = () => {
               type="button"
               onClick={closeModal}
               disabled={creating}
-              className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-300 transition hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/4 text-slate-300 transition hover:bg-white/8 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <FaTimes />
             </button>
 
             <div className="mb-7 pr-12">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
                 <FaBuilding />
                 Create Your Organization
               </div>
@@ -380,7 +384,7 @@ const OrganizationPage = () => {
                   Organizer Email
                 </label>
 
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-slate-300">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm text-slate-300">
                   <FaEnvelope className="text-cyan-300" />
                   <span className="truncate">
                     {organizerEmail || "Session email not found"}
@@ -394,7 +398,7 @@ const OrganizationPage = () => {
                   Organization Logo
                 </p>
 
-                <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center">
+                <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/3 p-4 sm:flex-row sm:items-center">
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#080C16] text-3xl text-slate-600">
                     {logoPreview ? (
                       <img
@@ -419,7 +423,7 @@ const OrganizationPage = () => {
                     <div className="mt-4 flex flex-wrap gap-3">
                       <label
                         htmlFor="organizationLogo"
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold text-slate-300 transition hover:border-cyan-300/40 hover:bg-white/[0.08]"
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/4 px-4 py-2 text-xs font-bold text-slate-300 transition hover:border-cyan-300/40 hover:bg-white/8"
                       >
                         <FaUpload />
                         Choose Logo
@@ -470,7 +474,7 @@ const OrganizationPage = () => {
                   value={formData.organizationName}
                   onChange={handleChange}
                   placeholder="Nova Event Studio"
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
+                  className="w-full rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
                 />
               </div>
 
@@ -493,7 +497,7 @@ const OrganizationPage = () => {
                   value={formData.website}
                   onChange={handleChange}
                   placeholder="novaevents.live"
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
+                  className="w-full rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
                 />
               </div>
 
@@ -513,7 +517,7 @@ const OrganizationPage = () => {
                   onChange={handleChange}
                   placeholder="Building memorable event experiences through workshops, meetups, cultural programs, and community gatherings."
                   rows={5}
-                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-7 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
+                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm leading-7 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50"
                 />
               </div>
 
@@ -524,7 +528,7 @@ const OrganizationPage = () => {
                   variant="bordered"
                   onPress={closeModal}
                   isDisabled={creating}
-                  className="h-11 border border-white/10 bg-white/[0.03] px-6 text-sm font-bold text-white"
+                  className="h-11 border border-white/10 bg-white/3 px-6 text-sm font-bold text-white"
                 >
                   Cancel
                 </Button>
