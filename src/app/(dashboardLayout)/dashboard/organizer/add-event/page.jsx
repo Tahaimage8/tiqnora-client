@@ -56,8 +56,11 @@ const AddEventPage = () => {
   const organizerName = session?.user?.name || "Organizer";
 
   const [creating, setCreating] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+
   const [selectedBanner, setSelectedBanner] = useState(null);
   const [bannerPreview, setBannerPreview] = useState("");
+  const [uploadedBannerUrl, setUploadedBannerUrl] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -92,31 +95,6 @@ const AddEventPage = () => {
     }));
   };
 
-  const handleBannerChange = (event) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select a valid banner image.");
-      return;
-    }
-
-    const maxSize = 5 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-      toast.error("Banner image must be under 5MB.");
-      return;
-    }
-
-    setSelectedBanner(file);
-  };
-
-  const removeBanner = () => {
-    setSelectedBanner(null);
-    setBannerPreview("");
-  };
-
   const uploadImageToImageBB = async (imageFile) => {
     const apiKey = process.env.NEXT_PUBLIC_IMAGE_UPLOAD_API;
 
@@ -144,9 +122,55 @@ const AddEventPage = () => {
     return result?.data?.display_url || result?.data?.url;
   };
 
+  const handleBannerChange = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid banner image.");
+      event.target.value = "";
+      return;
+    }
+
+    // 5MB limit
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      toast.error("Banner image must be under 5MB.");
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      setSelectedBanner(file);
+      setUploadedBannerUrl("");
+      setUploadingBanner(true);
+
+      const imageUrl = await uploadImageToImageBB(file);
+
+      setUploadedBannerUrl(imageUrl);
+      toast.success("Banner uploaded successfully.");
+    } catch (error) {
+      setSelectedBanner(null);
+      setBannerPreview("");
+      setUploadedBannerUrl("");
+      toast.error(error.message || "Banner upload failed.");
+    } finally {
+      setUploadingBanner(false);
+    }
+  };
+
+  const removeBanner = () => {
+    setSelectedBanner(null);
+    setBannerPreview("");
+    setUploadedBannerUrl("");
+  };
+
   const resetForm = () => {
     setSelectedBanner(null);
     setBannerPreview("");
+    setUploadedBannerUrl("");
 
     setFormData({
       title: "",
@@ -185,6 +209,16 @@ const AddEventPage = () => {
       return;
     }
 
+    if (uploadingBanner) {
+      toast.error("Banner is still uploading. Please wait.");
+      return;
+    }
+
+    if (!uploadedBannerUrl) {
+      toast.error("Banner upload not completed.");
+      return;
+    }
+
     if (!category) {
       toast.error("Event category is required.");
       return;
@@ -218,11 +252,9 @@ const AddEventPage = () => {
     try {
       setCreating(true);
 
-      const bannerUrl = await uploadImageToImageBB(selectedBanner);
-
       const newEvent = {
         title,
-        banner: bannerUrl,
+        banner: uploadedBannerUrl,
         category,
         location,
         date,
@@ -241,7 +273,7 @@ const AddEventPage = () => {
         return;
       }
 
-      console.log("Created event:", response.data);
+
 
       toast.success(response?.message || "Event created successfully.");
       resetForm();
@@ -369,6 +401,18 @@ const AddEventPage = () => {
                 {selectedBanner && (
                   <p className="mt-3 max-w-sm truncate text-xs text-slate-500">
                     {selectedBanner.name}
+                  </p>
+                )}
+
+                {uploadingBanner && (
+                  <p className="mt-2 text-xs font-semibold text-cyan-300">
+                    Uploading banner...
+                  </p>
+                )}
+
+                {uploadedBannerUrl && !uploadingBanner && (
+                  <p className="mt-2 text-xs font-semibold text-emerald-300">
+                    Banner uploaded successfully.
                   </p>
                 )}
               </div>
@@ -533,7 +577,7 @@ const AddEventPage = () => {
               radius="full"
               variant="bordered"
               onPress={resetForm}
-              isDisabled={creating}
+              isDisabled={creating || uploadingBanner}
               className="h-11 border border-white/10 bg-white/3 px-6 text-sm font-bold text-white"
             >
               Reset
@@ -542,11 +586,12 @@ const AddEventPage = () => {
             <Button
               type="submit"
               radius="full"
-              isLoading={creating}
+              isLoading={creating || uploadingBanner}
+              isDisabled={uploadingBanner}
               className="h-11 bg-linear-to-r from-[#7C3AED] to-[#F43F5E] px-7 text-sm font-bold text-white shadow-lg shadow-purple-500/20"
             >
               <FaPlusCircle className="mr-2" />
-              Host Event Now
+              {uploadingBanner ? "Uploading Banner..." : "Host Event Now"}
             </Button>
           </div>
         </form>

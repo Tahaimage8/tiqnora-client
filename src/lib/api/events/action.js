@@ -7,21 +7,21 @@ export const addEvent = async (data) => {
   return res;
 };
 
-export const getMyEvent = async (email) => {
+export const getMyEvents = async (email) => {
   const res = await serverFetch(
-    `/api/organizations?email=${encodeURIComponent(email)}`
+    `/api/events?email=${encodeURIComponent(email)}`
   );
 
   return res;
 };
 
 export const updateEvent = async (id, data) => {
-  const res = await serverMutation(`/api/organizations/${id}`, "PATCH", data);
+  const res = await serverMutation(`/api/events/${id}`, "PATCH", data);
   return res;
 };
 
 export const deleteEvent = async (id, organizerEmail) => {
-  const res = await serverMutation(`/api/organizations/${id}`, "DELETE", {
+  const res = await serverMutation(`/api/events/${id}`, "DELETE", {
     organizerEmail,
   });
 
