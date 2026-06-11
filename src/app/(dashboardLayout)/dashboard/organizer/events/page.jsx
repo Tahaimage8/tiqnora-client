@@ -52,6 +52,14 @@ const EventsPage = () => {
     loadMyEvents();
   }, [isPending, organizerEmail]);
 
+  const handleUpdatedEvent = (updatedEvent) => {
+    setEvents((prevEvents) =>
+      prevEvents.map((item) =>
+        item._id === updatedEvent._id ? updatedEvent : item
+      )
+    );
+  };
+
   if (isPending || loadingEvents) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
@@ -64,7 +72,6 @@ const EventsPage = () => {
 
   return (
     <section className="space-y-8 overflow-hidden">
-      {/* Header */}
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035] p-6 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-8">
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#7C3AED]/20 blur-[100px]" />
         <div className="pointer-events-none absolute -bottom-28 left-1/3 h-72 w-72 rounded-full bg-[#F43F5E]/10 blur-[100px]" />
@@ -98,7 +105,6 @@ const EventsPage = () => {
         </div>
       </div>
 
-      {/* Empty */}
       {events.length === 0 && (
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-8 text-center shadow-2xl shadow-black/10 backdrop-blur-xl">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-cyan-300/20 bg-cyan-300/10 text-3xl text-cyan-300">
@@ -115,7 +121,6 @@ const EventsPage = () => {
         </div>
       )}
 
-      {/* Table */}
       {events.length > 0 && (
         <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035] shadow-2xl shadow-black/10 backdrop-blur-xl">
           <div className="overflow-x-auto">
@@ -216,7 +221,11 @@ const EventsPage = () => {
 
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <EventEdit />
+                        <EventEdit
+                          event={event}
+                          onUpdated={handleUpdatedEvent}
+                        />
+
                         <EventDelete />
                       </div>
                     </td>
