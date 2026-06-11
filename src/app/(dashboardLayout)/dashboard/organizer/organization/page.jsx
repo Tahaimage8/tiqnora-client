@@ -17,6 +17,7 @@ import {
   FaTrash,
   FaUpload,
 } from "react-icons/fa";
+import { addOrganization } from "@/lib/api/organization/action";
 
 const OrganizationPage = () => {
   const { data: session, isPending } = authClient.useSession();
@@ -132,66 +133,75 @@ const OrganizationPage = () => {
     return result?.data?.display_url || result?.data?.url;
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    const organizationName = formData.organizationName.trim();
-    const website = formData.website.trim();
-    const description = formData.description.trim();
+  const organizationName = formData.organizationName.trim();
+  const website = formData.website.trim();
+  const description = formData.description.trim();
 
-    if (!organizerEmail) {
-      toast.error("Organizer email not found. Please login again.");
+  if (!organizerEmail) {
+    toast.error("Organizer email not found. Please login again.");
+    return;
+  }
+
+  if (!organizationName) {
+    toast.error("Organization name is required.");
+    return;
+  }
+
+  if (!selectedLogo) {
+    toast.error("Organization logo is required.");
+    return;
+  }
+
+  if (!description) {
+    toast.error("Organization description is required.");
+    return;
+  }
+
+  try {
+    setCreating(true);
+
+    toast.loading("Uploading organization logo...", {
+      id: "organization-logo",
+    });
+
+    const logoUrl = await uploadImageToImageBB(selectedLogo);
+
+    toast.success("Logo uploaded successfully.", {
+      id: "organization-logo",
+    });
+
+    const newOrganization = {
+      organizationName,
+      logo: logoUrl,
+      website,
+      description,
+      organizerEmail,
+      organizerName,
+      status: "active",
+    };
+
+    console.log("Organization data before backend:", newOrganization);
+
+    const response = await addOrganization(newOrganization);
+
+    if (!response?.success) {
+      toast.error(response?.message || "Organization creation failed.");
       return;
     }
 
-    if (!organizationName) {
-      toast.error("Organization name is required.");
-      return;
-    }
+    setOrganization(response.data);
 
-    if (!selectedLogo) {
-      toast.error("Organization logo is required.");
-      return;
-    }
-
-    if (!description) {
-      toast.error("Organization description is required.");
-      return;
-    }
-
-    try {
-      setCreating(true);
-
-      toast.loading("Uploading organization logo...", {
-        id: "organization-logo",
-      });
-
-      const logoUrl = await uploadImageToImageBB(selectedLogo);
-
-      toast.success("Logo uploaded successfully.", {
-        id: "organization-logo",
-      });
-
-      const newOrganization = {
-        organizationName,
-        logo: logoUrl,
-        website,
-        description,
-        organizerEmail,
-        organizerName,
-        status: "active",
-      };
-      console.log(newOrganization)
-      setOrganization(newOrganization);
-
-      toast.success("Organization created successfully.");
-      closeModal();
-    } catch (error) {
-      toast.error(error.message || "Organization creation failed.");
-    } finally {
-      setCreating(false);
-    }
-  };
+    toast.success("Organization created successfully.");
+    closeModal();
+  } catch (error) {
+    toast.error(error.message || "Organization creation failed.");
+  } finally {
+    setCreating(false);
+  }
+};
 
   if (isPending) {
     return (
