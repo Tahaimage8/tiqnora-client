@@ -5,6 +5,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { getMyEvents } from "@/lib/api/events/action";
+
+import EventEdit from "@/components/Organizer/EventEdit";
+import EventDelete from "@/components/Organizer/EventDelete";
 
 import {
   FaCalendarAlt,
@@ -12,7 +16,6 @@ import {
   FaMapMarkerAlt,
   FaTicketAlt,
 } from "react-icons/fa";
-import { getMyEvents } from "@/lib/api/events/action";
 
 const EventsPage = () => {
   const { data: session, isPending } = authClient.useSession();
@@ -122,23 +125,33 @@ const EventsPage = () => {
                   <th className="px-5 py-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
                     Event
                   </th>
+
                   <th className="px-5 py-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
                     Category
                   </th>
+
                   <th className="px-5 py-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
                     Location
                   </th>
+
                   <th className="px-5 py-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
                     Date
                   </th>
+
                   <th className="px-5 py-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
                     Price
                   </th>
+
                   <th className="px-5 py-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
                     Seats
                   </th>
+
                   <th className="px-5 py-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
                     Status
+                  </th>
+
+                  <th className="px-5 py-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -199,6 +212,13 @@ const EventsPage = () => {
                       <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-emerald-300">
                         {event.status || "approved"}
                       </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <EventEdit />
+                        <EventDelete />
+                      </div>
                     </td>
                   </tr>
                 ))}
