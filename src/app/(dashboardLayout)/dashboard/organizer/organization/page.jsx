@@ -21,6 +21,7 @@ import {
 
 import {
   addOrganization,
+  deleteOrganization,
   getMyOrganization,
 } from "@/lib/api/organization/action";
 
@@ -35,6 +36,7 @@ const OrganizationPage = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [selectedLogo, setSelectedLogo] = useState(null);
   const [logoPreview, setLogoPreview] = useState("");
@@ -226,6 +228,40 @@ const OrganizationPage = () => {
     }
   };
 
+  const handleDeleteOrganization = async () => {
+    if (!organization?._id) {
+      toast.error("Organization id not found.");
+      return;
+    }
+
+    if (!organizerEmail) {
+      toast.error("Organizer email not found. Please login again.");
+      return;
+    }
+
+    try {
+      setDeleting(true);
+
+      const response = await deleteOrganization(
+        organization._id,
+        organizerEmail
+      );
+
+      if (!response?.success) {
+        toast.error(response?.message || "Organization delete failed.");
+        return;
+      }
+
+      setOrganization(null);
+
+      toast.success(response?.message || "Organization deleted successfully.");
+    } catch (error) {
+      toast.error(error.message || "Organization delete failed.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (isPending || fetchingOrganization) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
@@ -330,9 +366,8 @@ const OrganizationPage = () => {
         <Organization
           organization={organization}
           onUpdated={setOrganization}
-          onDelete={() =>
-            toast.info("Delete option will be added in DELETE step.")
-          }
+          onDelete={handleDeleteOrganization}
+          deleting={deleting}
         />
       )}
 

@@ -18,3 +18,11 @@ export const updateOrganization = async (id, data) => {
   const res = await serverMutation(`/api/organizations/${id}`, "PATCH", data);
   return res;
 };
+
+export const deleteOrganization = async (id, organizerEmail) => {
+  const res = await serverMutation(`/api/organizations/${id}`, "DELETE", {
+    organizerEmail,
+  });
+
+  return res;
+};

@@ -5,11 +5,16 @@ import {
   FaEnvelope,
   FaExternalLinkAlt,
   FaGlobe,
-  FaTrash,
 } from "react-icons/fa";
 import UpdateModal from "./UpdateModal";
+import DeleteModal from "./DeleteModal";
 
-const Organization = ({ organization, onUpdated, onDelete, deleting = false }) => {
+const Organization = ({
+  organization,
+  onUpdated,
+  onDelete,
+  deleting = false,
+}) => {
   if (!organization) return null;
 
   const websiteUrl = organization.website?.startsWith("http")
@@ -56,15 +61,11 @@ const Organization = ({ organization, onUpdated, onDelete, deleting = false }) =
                 onUpdated={onUpdated}
               />
 
-              <button
-                type="button"
-                onClick={onDelete}
-                disabled={deleting}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-rose-400/20 bg-rose-400/10 text-rose-300 transition hover:bg-rose-400/15 disabled:cursor-not-allowed disabled:opacity-60"
-                title="Delete organization"
-              >
-                <FaTrash />
-              </button>
+              <DeleteModal
+                organizationName={organization.organizationName}
+                onConfirm={onDelete}
+                deleting={deleting}
+              />
             </div>
           </div>
 
